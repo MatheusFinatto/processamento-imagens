@@ -25,7 +25,7 @@ def abrir_imagem2():
         label_imagem2.config(image=imagem2_tk)
 
 
-def somar_imagens():
+def operar_imagens(operacao):
     global imagem1, imagem2, resultado, resultado_tk
     if imagem1 and imagem2:  # verifica se as duas imagens foram selecionadas
         if imagem1.size == imagem2.size:  # verifica se as imagens têm o mesmo tamanho
@@ -38,10 +38,47 @@ def somar_imagens():
                         pixel1 = imagem1.getpixel((i, j))
                         # obtém o pixel da imagem 2 na posição (i,j)
                         pixel2 = imagem2.getpixel((i, j))
-                        # somar os valores dos canais RGB individualmente, com checagem de truncamento
-                        novo_pixel = (min(pixel1[0] + pixel2[0], 255),
-                                      min(pixel1[1] + pixel2[1], 255),
-                                      min(pixel1[2] + pixel2[2], 255),)
+                        # realiza a operação matemática com os valores dos canais RGB individualmente
+                        if operacao == 'soma':
+                            novo_pixel = (min(pixel1[0] + pixel2[0], 255),
+                                          min(pixel1[1] + pixel2[1], 255),
+                                          min(pixel1[2] + pixel2[2], 255),)
+                        elif operacao == 'subtracao':
+                            novo_pixel = (max(pixel1[0] - pixel2[0], 0),
+                                          max(pixel1[1] - pixel2[1], 0),
+                                          max(pixel1[2] - pixel2[2], 0),)
+                        elif operacao == 'multiplicacao':
+                            novo_pixel = (min(pixel1[0] * pixel2[0], 255),
+                                          min(pixel1[1] * pixel2[1], 255),
+                                          min(pixel1[2] * pixel2[2], 255),)
+                        elif operacao == 'divisao':
+                            novo_pixel = (pixel1[0] // max(pixel2[0], 1),
+                                          pixel1[1] // max(pixel2[1], 1),
+                                          pixel1[2] // max(pixel2[2], 1))
+                        elif operacao == 'and':
+                            novo_pixel = (pixel1[0] & pixel2[0],
+                                          pixel1[1] & pixel2[1],
+                                          pixel1[2] & pixel2[2])
+                        elif operacao == 'or':
+                            novo_pixel = (pixel1[0] | pixel2[0],
+                                          pixel1[1] | pixel2[1],
+                                          pixel1[2] | pixel2[2])
+                        elif operacao == 'xor':
+                            novo_pixel = (pixel1[0] ^ pixel2[0],
+                                          pixel1[1] ^ pixel2[1],
+                                          pixel1[2] ^ pixel2[2])
+                        elif operacao == 'media':
+                            novo_pixel = ((pixel1[0] + pixel2[0]) // 2,
+                                          (pixel1[1] + pixel2[1]) // 2,
+                                          (pixel1[2] + pixel2[2]) // 2)
+                        elif operacao == 'blend':
+                            alpha = float(campo_alpha.get())
+                            novo_pixel = tuple(int(alpha*p1 + (1-alpha)*p2)
+                                               for p1, p2 in zip(pixel1, pixel2))
+                        else:
+                            messagebox.showerror(
+                                "Erro", "Operação inválida.")  # exibe uma mensagem de erro se a operação for inválida
+                            return
                         # atribui o novo pixel à imagem resultante na posição (i,j)
                         resultado.putpixel((i, j), novo_pixel)
             elif imagem1.mode == 'L':  # se a imagem for escala de cinza
@@ -51,8 +88,30 @@ def somar_imagens():
                         pixel1 = imagem1.getpixel((i, j))
                         # obtém o pixel da imagem 2 na posição (i,j)
                         pixel2 = imagem2.getpixel((i, j))
-                        # somar os valores dos canais de escala de cinza, com checagem de truncamento
-                        novo_pixel = min(pixel1 + pixel2, 255)
+                        # realiza a operação matemática com os valores dos canais de escala de cinza
+                        if operacao == 'soma':
+                            novo_pixel = min(pixel1 + pixel2, 255)
+                        elif operacao == 'subtracao':
+                            novo_pixel = max(pixel1 - pixel2, 0)
+                        elif operacao == 'multiplicacao':
+                            novo_pixel = min(pixel1 * pixel2, 255)
+                        elif operacao == 'divisao':
+                            novo_pixel = pixel1 // max(pixel2, 1)
+                        elif operacao == 'and':
+                            novo_pixel = pixel1 & pixel2
+                        elif operacao == 'or':
+                            novo_pixel = pixel1 | pixel2
+                        elif operacao == 'xor':
+                            novo_pixel = pixel1 ^ pixel2
+                        elif operacao == 'media':
+                            novo_pixel = (pixel1 + pixel2) // 2
+                        elif operacao == 'blend':
+                            alpha = float(campo_alpha.get())
+                            novo_pixel = int(alpha*pixel1 + (1-alpha)*pixel2)
+                        else:
+                            messagebox.showerror(
+                                "Erro", "Operação inválida.")  # exibe uma mensagem de erro se a operação for inválida
+                            return
                         # atribui o novo pixel à imagem resultante na posição (i,j)
                         resultado.putpixel((i, j), novo_pixel)
             else:
@@ -73,149 +132,43 @@ def somar_imagens():
         messagebox.showerror("Erro", "Selecione duas imagens.")
 
 
-def subtrair_imagens():
-    global imagem1, imagem2, resultado, resultado_tk
-    if imagem1 and imagem2:  # verifica se as duas imagens foram selecionadas
-        if imagem1.size == imagem2.size:  # verifica se as imagens têm o mesmo tamanho
-            # cria uma imagem vazia com o mesmo modo e tamanho das imagens originais
-            resultado = Image.new(imagem1.mode, imagem1.size)
-            if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
-                for i in range(imagem1.width):
-                    for j in range(imagem1.height):
-                        # obtém o pixel da imagem 1 na posição (i,j)
-                        pixel1 = imagem1.getpixel((i, j))
-                        # obtém o pixel da imagem 2 na posição (i,j)
-                        pixel2 = imagem2.getpixel((i, j))
-                        # subtrai os valores dos canais RGB individualmente
-                        novo_pixel = (max(pixel1[0] - pixel2[0], 0),
-                                      max(pixel1[1] - pixel2[1], 0),
-                                      max(pixel1[2] - pixel2[2], 0),)
-                        # atribui o novo pixel à imagem resultante na posição (i,j)
-                        resultado.putpixel((i, j), novo_pixel)
-            elif imagem1.mode == 'L':  # se a imagem for escala de cinza
-                for i in range(imagem1.width):
-                    for j in range(imagem1.height):
-                        # obtém o pixel da imagem 1 na posição (i,j)
-                        pixel1 = imagem1.getpixel((i, j))
-                        # obtém o pixel da imagem 2 na posição (i,j)
-                        pixel2 = imagem2.getpixel((i, j))
-                        # subtrai os valores dos canais de escala de cinza
-                        novo_pixel = max(pixel1 - pixel2, 0)
-                        # atribui o novo pixel à imagem resultante na posição (i,j)
-                        resultado.putpixel((i, j), novo_pixel)
-            else:
-                messagebox.showerror(
-                    "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
-                return
-            # cria uma nova imagem Tkinter com a imagem resultante
-            resultado_tk = ImageTk.PhotoImage(resultado)
-            # exibe uma mensagem de sucesso
-            messagebox.showinfo("Sucesso", "Imagens subtraídas com sucesso.")
-            # exibe a imagem resultante no widget Label
-            label_resultado.config(image=resultado_tk)
+def not_image():
+    global imagem1, resultado, resultado_tk
+    if imagem1:  # verifica se a imagem foi selecionada
+        # cria uma imagem vazia com o mesmo modo e tamanho da imagem original
+        resultado = Image.new(imagem1.mode, imagem1.size)
+        if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+                    # realiza a operação "not" em cada canal de cor individualmente
+                    novo_pixel = (
+                        255 - pixel1[0], 255 - pixel1[1], 255 - pixel1[2])
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+        elif imagem1.mode == 'L':  # se a imagem for escala de cinza
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+                    # realiza a operação "not" no pixel
+                    novo_pixel = 255 - pixel1
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
         else:
             messagebox.showerror(
-                "Erro", "As imagens precisam ter o mesmo tamanho.")  # exibe uma mensagem de erro se as imagens não tiverem o mesmo tamanho
+                "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
+            return
+        # cria uma nova imagem Tkinter com a imagem resultante
+        resultado_tk = ImageTk.PhotoImage(resultado)
+        # exibe uma mensagem de sucesso
+        messagebox.showinfo("Sucesso", "Imagem 'not' com sucesso.")
+        # exibe a imagem resultante no widget Label
+        label_resultado.config(image=resultado_tk)
     else:
-        # exibe uma mensagem de erro se as imagens não foram selecionadas
-        messagebox.showerror("Erro", "Selecione duas imagens.")
-
-
-def multiplicar_imagens():
-    global imagem1, imagem2, resultado, resultado_tk
-    if imagem1 and imagem2:  # verifica se as duas imagens foram selecionadas
-        if imagem1.size == imagem2.size:  # verifica se as imagens têm o mesmo tamanho
-            # cria uma imagem vazia com o mesmo modo e tamanho das imagens originais
-            resultado = Image.new(imagem1.mode, imagem1.size)
-            if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
-                for i in range(imagem1.width):
-                    for j in range(imagem1.height):
-                        # obtém o pixel da imagem 1 na posição (i,j)
-                        pixel1 = imagem1.getpixel((i, j))
-                        # obtém o pixel da imagem 2 na posição (i,j)
-                        pixel2 = imagem2.getpixel((i, j))
-                        # multiplica os valores dos canais RGB individualmente
-                        novo_pixel = (min(pixel1[0] * pixel2[0], 255),
-                                      min(pixel1[1] * pixel2[1], 255),
-                                      min(pixel1[2] * pixel2[2], 255),)
-                        # atribui o novo pixel à imagem resultante na posição (i,j)
-                        resultado.putpixel((i, j), novo_pixel)
-            elif imagem1.mode == 'L':  # se a imagem for escala de cinza
-                for i in range(imagem1.width):
-                    for j in range(imagem1.height):
-                        # obtém o pixel da imagem 1 na posição (i,j)
-                        pixel1 = imagem1.getpixel((i, j))
-                        # obtém o pixel da imagem 2 na posição (i,j)
-                        pixel2 = imagem2.getpixel((i, j))
-                        # multiplica os valores dos canais de escala de cinza
-                        novo_pixel = min(pixel1 * pixel2, 255)
-                        # atribui o novo pixel à imagem resultante na posição (i,j)
-                        resultado.putpixel((i, j), novo_pixel)
-            else:
-                messagebox.showerror(
-                    "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
-                return
-            # cria uma nova imagem Tkinter com a imagem resultante
-            resultado_tk = ImageTk.PhotoImage(resultado)
-            # exibe uma mensagem de sucesso
-            messagebox.showinfo(
-                "Sucesso", "Imagens multiplicadas com sucesso.")
-            # exibe a imagem resultante no widget Label
-            label_resultado.config(image=resultado_tk)
-        else:
-            messagebox.showerror(
-                "Erro", "As imagens precisam ter o mesmo tamanho.")  # exibe uma mensagem de erro se as imagens não tiverem o mesmo tamanho
-    else:
-        # exibe uma mensagem de erro se as imagens não foram selecionadas
-        messagebox.showerror("Erro", "Selecione duas imagens.")
-
-
-def dividir_imagens():
-    global imagem1, imagem2, resultado, resultado_tk
-    if imagem1 and imagem2:  # verifica se as duas imagens foram selecionadas
-        if imagem1.size == imagem2.size:  # verifica se as imagens têm o mesmo tamanho
-            # cria uma imagem vazia com o mesmo modo e tamanho das imagens originais
-            resultado = Image.new(imagem1.mode, imagem1.size)
-            if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
-                for i in range(imagem1.width):
-                    for j in range(imagem1.height):
-                        # obtém o pixel da imagem 1 na posição (i,j)
-                        pixel1 = imagem1.getpixel((i, j))
-                        # obtém o pixel da imagem 2 na posição (i,j)
-                        pixel2 = imagem2.getpixel((i, j))
-                        # divide os valores dos canais RGB individualmente, mas verifica se o valor do divisor é zero para evitar divisão por zero
-                        novo_pixel = (pixel1[0] // max(pixel2[0], 1),
-                                      pixel1[1] // max(pixel2[1], 1),
-                                      pixel1[2] // max(pixel2[2], 1))
-                        # atribui o novo pixel à imagem resultante na posição (i,j)
-                        resultado.putpixel((i, j), novo_pixel)
-            elif imagem1.mode == 'L':  # se a imagem for escala de cinza
-                for i in range(imagem1.width):
-                    for j in range(imagem1.height):
-                        # obtém o pixel da imagem 1 na posição (i,j)
-                        pixel1 = imagem1.getpixel((i, j))
-                        # obtém o pixel da imagem 2 na posição (i,j)
-                        pixel2 = imagem2.getpixel((i, j))
-                        # divide os valores dos canais de escala de cinza, mas verifica se o valor do divisor é zero para evitar divisão por zero
-                        novo_pixel = pixel1 // max(pixel2, 1)
-                        # atribui o novo pixel à imagem resultante na posição (i,j)
-                        resultado.putpixel((i, j), novo_pixel)
-            else:
-                messagebox.showerror(
-                    "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
-                return
-            # cria uma nova imagem Tkinter com a imagem resultante
-            resultado_tk = ImageTk.PhotoImage(resultado)
-            # exibe uma mensagem de sucesso
-            messagebox.showinfo("Sucesso", "Imagens divididas com sucesso.")
-            # exibe a imagem resultante no widget Label
-            label_resultado.config(image=resultado_tk)
-        else:
-            messagebox.showerror(
-                "Erro", "As imagens precisam ter o mesmo tamanho.")  # exibe uma mensagem de erro se as imagens não tiverem o mesmo tamanho
-    else:
-        # exibe uma mensagem de erro se as imagens não foram selecionadas
-        messagebox.showerror("Erro", "Selecione duas imagens.")
+        # exibe uma mensagem de erro se a imagem não foi selecionada
+        messagebox.showerror("Erro", "Selecione uma imagem.")
 
 
 def salvar_resultado():
@@ -256,25 +209,59 @@ botao_imagem2.pack(side=LEFT)
 container2 = Frame(root)
 container2.pack(pady=10)
 
-botao_somar = Button(container2, text="Somar", command=somar_imagens)
+botao_somar = Button(container2, text="Somar",
+                     command=lambda: operar_imagens("soma"))
 botao_somar.pack(side=LEFT)
 
-botao_subtrair = Button(container2, text="Subtrair", command=subtrair_imagens)
+botao_subtrair = Button(container2, text="Subtrair",
+                        command=lambda: operar_imagens("subtracao"))
 botao_subtrair.pack(side=LEFT)
 
 botao_multiplicar = Button(
-    container2, text="Multiplicar", command=multiplicar_imagens)
+    container2, text="Multiplicar", command=lambda: operar_imagens("multiplicacao"))
 botao_multiplicar.pack(side=LEFT)
 
-botao_dividir = Button(container2, text="Dividir", command=dividir_imagens)
+botao_dividir = Button(container2, text="Dividir",
+                       command=lambda: operar_imagens("divisao"))
 botao_dividir.pack(side=RIGHT)
+
+botao_media = Button(container2, text="Media",
+                     command=lambda: operar_imagens("media"))
+botao_media.pack(side=RIGHT)
+
+
+container5 = Frame(root)
+container5.pack()
+
+botao_and = Button(container5, text="and",
+                   command=lambda: operar_imagens("and"))
+botao_and.pack(side=RIGHT)
+
+botao_or = Button(container5, text="or", command=lambda: operar_imagens("or"))
+botao_or.pack(side=RIGHT)
+
+botao_xor = Button(container5, text="xor",
+                   command=lambda: operar_imagens("xor"))
+botao_xor.pack(side=RIGHT)
+
+botao_not = Button(container5, text="not", command=not_image)
+botao_not.pack(side=RIGHT)
 
 container4 = Frame(root)
 container4.pack()
 
-botao_salvar = Button(container4, text="Salvar resultado",
+campo_alpha = Entry(container4)
+campo_alpha.pack(side=LEFT)
+
+botao_blend = Button(container4, text="Blend",
+                     command=lambda: operar_imagens("blend"))
+botao_blend.pack()
+
+container6 = Frame(root)
+container6.pack()
+botao_salvar = Button(container6, text="Salvar resultado",
                       command=salvar_resultado)
-botao_salvar.pack(side=TOP)
+botao_salvar.pack()
 
 container3 = Frame(root)
 container3.pack(pady=10, fill=BOTH, expand=True)

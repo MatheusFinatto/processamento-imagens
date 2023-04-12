@@ -1,8 +1,5 @@
-from PIL import Image, ImageTk, ImageChops
-import tkinter.messagebox as messagebox
-from tkinter import *
-from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
+from tkinter import *
 
 
 def abrir_imagem1():
@@ -26,107 +23,149 @@ def abrir_imagem2():
 
 
 def operar_imagens(operacao):
+
     global imagem1, imagem2, resultado, resultado_tk
     if imagem1 and imagem2:  # verifica se as duas imagens foram selecionadas
         if imagem1.size == imagem2.size:  # verifica se as imagens têm o mesmo tamanho
+
             # cria uma imagem vazia com o mesmo modo e tamanho das imagens originais
             resultado = Image.new(imagem1.mode, imagem1.size)
+
             if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
                 for i in range(imagem1.width):
                     for j in range(imagem1.height):
+
                         # obtém o pixel da imagem 1 na posição (i,j)
-                        pixel1 = imagem1.getpixel((i, j))
+                        pixel1 = imagem1[i, j]
+
                         # obtém o pixel da imagem 2 na posição (i,j)
                         pixel2 = imagem2.getpixel((i, j))
+
                         # realiza a operação matemática com os valores dos canais RGB individualmente
                         if operacao == 'soma':
                             novo_pixel = (min(pixel1[0] + pixel2[0], 255),
                                           min(pixel1[1] + pixel2[1], 255),
                                           min(pixel1[2] + pixel2[2], 255),)
+
                         elif operacao == 'subtracao':
                             novo_pixel = (max(pixel1[0] - pixel2[0], 0),
                                           max(pixel1[1] - pixel2[1], 0),
                                           max(pixel1[2] - pixel2[2], 0),)
+
                         elif operacao == 'multiplicacao':
                             novo_pixel = (min(pixel1[0] * pixel2[0], 255),
                                           min(pixel1[1] * pixel2[1], 255),
                                           min(pixel1[2] * pixel2[2], 255),)
+
                         elif operacao == 'divisao':
                             novo_pixel = (pixel1[0] // max(pixel2[0], 1),
                                           pixel1[1] // max(pixel2[1], 1),
                                           pixel1[2] // max(pixel2[2], 1))
+
                         elif operacao == 'and':
                             novo_pixel = (pixel1[0] & pixel2[0],
                                           pixel1[1] & pixel2[1],
                                           pixel1[2] & pixel2[2])
+
                         elif operacao == 'or':
                             novo_pixel = (pixel1[0] | pixel2[0],
                                           pixel1[1] | pixel2[1],
                                           pixel1[2] | pixel2[2])
+
                         elif operacao == 'xor':
                             novo_pixel = (pixel1[0] ^ pixel2[0],
                                           pixel1[1] ^ pixel2[1],
                                           pixel1[2] ^ pixel2[2])
+
                         elif operacao == 'media':
                             novo_pixel = ((pixel1[0] + pixel2[0]) // 2,
                                           (pixel1[1] + pixel2[1]) // 2,
                                           (pixel1[2] + pixel2[2]) // 2)
+
                         elif operacao == 'blend':
                             alpha = float(campo_alpha.get())
-                            novo_pixel = tuple(int(alpha*p1 + (1-alpha)*p2)
-                                               for p1, p2 in zip(pixel1, pixel2))
+                            novo_pixel = (
+                                int(alpha * pixel1[0] +
+                                    (1 - alpha) * pixel2[0]),
+                                int(alpha * pixel1[1] +
+                                    (1 - alpha) * pixel2[1]),
+                                int(alpha * pixel1[2] +
+                                    (1 - alpha) * pixel2[2])
+                            )
+
                         else:
                             messagebox.showerror(
                                 "Erro", "Operação inválida.")  # exibe uma mensagem de erro se a operação for inválida
                             return
+
                         # atribui o novo pixel à imagem resultante na posição (i,j)
                         resultado.putpixel((i, j), novo_pixel)
+
             elif imagem1.mode == 'L':  # se a imagem for escala de cinza
                 for i in range(imagem1.width):
                     for j in range(imagem1.height):
+
                         # obtém o pixel da imagem 1 na posição (i,j)
                         pixel1 = imagem1.getpixel((i, j))
+
                         # obtém o pixel da imagem 2 na posição (i,j)
                         pixel2 = imagem2.getpixel((i, j))
+
                         # realiza a operação matemática com os valores dos canais de escala de cinza
                         if operacao == 'soma':
                             novo_pixel = min(pixel1 + pixel2, 255)
+
                         elif operacao == 'subtracao':
                             novo_pixel = max(pixel1 - pixel2, 0)
+
                         elif operacao == 'multiplicacao':
                             novo_pixel = min(pixel1 * pixel2, 255)
+
                         elif operacao == 'divisao':
                             novo_pixel = pixel1 // max(pixel2, 1)
+
                         elif operacao == 'and':
                             novo_pixel = pixel1 & pixel2
+
                         elif operacao == 'or':
                             novo_pixel = pixel1 | pixel2
+
                         elif operacao == 'xor':
                             novo_pixel = pixel1 ^ pixel2
+
                         elif operacao == 'media':
                             novo_pixel = (pixel1 + pixel2) // 2
+
                         elif operacao == 'blend':
                             alpha = float(campo_alpha.get())
                             novo_pixel = int(alpha*pixel1 + (1-alpha)*pixel2)
+
                         else:
                             messagebox.showerror(
                                 "Erro", "Operação inválida.")  # exibe uma mensagem de erro se a operação for inválida
                             return
+
                         # atribui o novo pixel à imagem resultante na posição (i,j)
                         resultado.putpixel((i, j), novo_pixel)
+
             else:
                 messagebox.showerror(
                     "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
                 return
+
             # cria uma nova imagem Tkinter com a imagem resultante
             resultado_tk = ImageTk.PhotoImage(resultado)
+
             # exibe uma mensagem de sucesso
-            messagebox.showinfo("Sucesso", "Imagens somadas com sucesso.")
+            messagebox.showinfo("Sucesso", "Operação realizada com sucesso.")
+
             # exibe a imagem resultante no widget Label
             label_resultado.config(image=resultado_tk)
+
         else:
             messagebox.showerror(
                 "Erro", "As imagens precisam ter o mesmo tamanho.")  # exibe uma mensagem de erro se as imagens não tiverem o mesmo tamanho
+
     else:
         # exibe uma mensagem de erro se as imagens não foram selecionadas
         messagebox.showerror("Erro", "Selecione duas imagens.")
@@ -135,37 +174,50 @@ def operar_imagens(operacao):
 def not_image():
     global imagem1, resultado, resultado_tk
     if imagem1:  # verifica se a imagem foi selecionada
+
         # cria uma imagem vazia com o mesmo modo e tamanho da imagem original
         resultado = Image.new(imagem1.mode, imagem1.size)
+
         if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
             for i in range(imagem1.width):
                 for j in range(imagem1.height):
+
                     # obtém o pixel da imagem 1 na posição (i,j)
                     pixel1 = imagem1.getpixel((i, j))
+
                     # realiza a operação "not" em cada canal de cor individualmente
                     novo_pixel = (
                         255 - pixel1[0], 255 - pixel1[1], 255 - pixel1[2])
                     # atribui o novo pixel à imagem resultante na posição (i,j)
                     resultado.putpixel((i, j), novo_pixel)
+
         elif imagem1.mode == 'L':  # se a imagem for escala de cinza
             for i in range(imagem1.width):
                 for j in range(imagem1.height):
+
                     # obtém o pixel da imagem 1 na posição (i,j)
                     pixel1 = imagem1.getpixel((i, j))
+
                     # realiza a operação "not" no pixel
                     novo_pixel = 255 - pixel1
+
                     # atribui o novo pixel à imagem resultante na posição (i,j)
                     resultado.putpixel((i, j), novo_pixel)
+
         else:
             messagebox.showerror(
                 "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
             return
+
         # cria uma nova imagem Tkinter com a imagem resultante
         resultado_tk = ImageTk.PhotoImage(resultado)
+
         # exibe uma mensagem de sucesso
-        messagebox.showinfo("Sucesso", "Imagem 'not' com sucesso.")
+        messagebox.showinfo("Sucesso", "Imagem invertida com sucesso.")
+
         # exibe a imagem resultante no widget Label
         label_resultado.config(image=resultado_tk)
+
     else:
         # exibe uma mensagem de erro se a imagem não foi selecionada
         messagebox.showerror("Erro", "Selecione uma imagem.")
@@ -192,7 +244,7 @@ imagem2_tk = None
 resultado_tk = None
 
 root = Tk()
-root.title("Somador de imagens")
+root.title("Operações com imagens")
 
 # Criar um Canvas com barras de rolagem
 container1 = Frame(root)

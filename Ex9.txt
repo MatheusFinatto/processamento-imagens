@@ -1,0 +1,13 @@
+P = imread('cameraman.png'); % Lê a imagem de entrada P
+[M, N, ~] = size(P); % Obtém as dimensões da imagem P
+R = zeros(M, 2*N, class(P)); % Cria uma matriz R com o dobro das colunas de P
+R(:, 1:N) = P; % Copia a imagem P na metade esquerda de R
+
+% Cria a imagem espelhada da imagem P e a coloca na metade direita de R
+for i = 1:M
+    for j = 1:N
+        R(i, N+j) = P(i, N-j+1);
+    end
+end
+
+imshow(R); % Mostra a imagem de saída R

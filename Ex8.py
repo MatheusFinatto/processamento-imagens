@@ -1,224 +1,279 @@
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from PIL import Image, ImageTk, ImageChops
+import tkinter.messagebox as messagebox
+from tkinter import *
+from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
-import numpy as np
-import cv2
 
 
-def get_max(matriz):
-    maximo = float('-inf')  # Inicializa com um valor muito pequeno
-    for linha in matriz:
-        for valor in linha:
-            if valor > maximo:
-                maximo = valor
-    return maximo
+def abrir_imagem1():
+    global imagem1, imagem1_tk
+    caminho_imagem1 = filedialog.askopenfilename()
+    if caminho_imagem1:
+        imagem1 = Image.open(caminho_imagem1)
+        imagem1_tk = ImageTk.PhotoImage(imagem1)
+        botao_imagem1.config(text="Imagem 1 selecionada: " + caminho_imagem1)
+        label_imagem1.config(image=imagem1_tk)
 
 
-def get_min(matriz):
-    minimo = np.inf  # começa com infinito para garantir que o primeiro valor seja menor
-    for linha in matriz:
-        for valor in linha:
-            if valor < minimo:
-                minimo = valor
-    return minimo
+def abrir_imagem2():
+    global imagem2, imagem2_tk
+    caminho_imagem2 = filedialog.askopenfilename()
+    if caminho_imagem2:
+        imagem2 = Image.open(caminho_imagem2)
+        imagem2_tk = ImageTk.PhotoImage(imagem2)
+        botao_imagem2.config(text="Imagem 2 selecionada: " + caminho_imagem2)
+        label_imagem2.config(image=imagem2_tk)
 
 
-def exportar_imagem(img):
-    arquivo = filedialog.asksaveasfilename(defaultextension='.png')
-    if arquivo:
-        img_export = Image.fromarray(img)
-        img_export.save(arquivo)
-
-
-# Variáveis para armazenar as imagens escolhidas
-img_p_arr = None
-img_q_arr = None
-img_r_arr = None
-
-
-# Define a função para escolher a imagem P
-def escolher_imagem_p():
-    global img_p_arr
-
-    # Abre o diálogo para escolher o arquivo
-    arquivo = filedialog.askopenfilename()
-
-    # Carrega a imagem e transforma em um array numpy
-    img_p = Image.open(arquivo).convert('RGB')
-    img_p_arr = np.array(img_p)
-
-    # Exibe a imagem escolhida na janela
-    img_p_tk = ImageTk.PhotoImage(img_p)
-    imagem_p.config(image=img_p_tk)
-    imagem_p.image = img_p_tk
-
-
-# Define a função para escolher a imagem Q
-def escolher_imagem_q():
-    global img_q_arr
-
-    # Abre o diálogo para escolher o arquivo
-    arquivo = filedialog.askopenfilename()
-
-    # Carrega a imagem e transforma em um array numpy
-    img_q = Image.open(arquivo).convert('RGB')
-    img_q_arr = np.array(img_q)
-
-    # Exibe a imagem escolhida na janela
-    img_q_tk = ImageTk.PhotoImage(img_q)
-    imagem_q.config(image=img_q_tk)
-    imagem_q.image = img_q_tk
-
-# Define a função para calcular a operação escolhida
-
-
-def calcular_operacao(operacao):
-    global img_p_arr, img_q_arr, img_r_arr
-
-    # Verifica se as imagens foram escolhidas
-    if img_p_arr is None or img_q_arr is None:
-        messagebox.showerror('Erro', 'As imagens P e Q devem ser escolhidas')
-        return
-
-    # Verifica se as imagens têm as mesmas dimensões
-    if img_p_arr.shape != img_q_arr.shape:
-        messagebox.showerror(
-            'Erro', 'As imagens devem ter as mesmas dimensões')
-        return
-
-    # Calcula a operação escolhida
-    if operacao == 'Soma':
-        img_r_arr = cv2.add(img_q_arr, img_p_arr)
-        # altura, largura, _ = img_p_arr.shape
-        # img_q_arr = cv2.resize(img_q_arr, (largura, altura))
-        # img_r_arr = np.zeros((altura, largura, 3), dtype=np.uint8)
-        # for i in range(altura):
-        #     for j in range(largura):
-        #         for c in range(3):
-        #             img_r_arr[i, j, c] = img_p_arr[i, j, c] + \
-        #                 img_q_arr[i, j, c]
-        # img_r_arr = np.clip(img_r_arr, 0, 255).astype(np.uint8)
-        # if (np.max(img_r_arr) > 255):
-        #     for i in range(altura):
-        #         for j in range(largura):
-        #             if img_r_arr[i, j] > 255:
-        #                 img_r_arr[i, j] = (255/(get_max(img_r_arr) - get_min(img_r_arr))) * (
-        #                     img_r_arr[img_r_arr > 255] - get_min(img_r_arr))
-
-    elif operacao == 'Subtração':
-        altura, largura = img_p_arr.shape
-        img_r_arr = np.zeros((altura, largura), dtype=np.uint8)
-        for i in range(altura):
-            for j in range(largura):
-                img_r_arr[i, j] = img_p_arr[i, j] - img_q_arr[i, j]
-
-    elif operacao == 'Multiplicação':
-        altura, largura = img_p_arr.shape
-        img_r_arr = np.zeros((altura, largura), dtype=np.uint8)
-        for i in range(altura):
-            for j in range(largura):
-                img_r_arr[i, j] = img_p_arr[i, j] * img_q_arr[i, j]
-        if (np.max(img_r_arr) > 255):
-            for i in range(altura):
-                for j in range(largura):
-                    if img_r_arr[i, j] > 255:
-                        img_r_arr[i, j] = (255/(get_max(img_r_arr) - get_min(img_r_arr))) * (
-                            img_r_arr[img_r_arr > 255] - get_min(img_r_arr))
-
-    elif operacao == 'Divisão':
-        altura, largura = img_p_arr.shape
-        img_r_arr = np.zeros((altura, largura), dtype=np.uint8)
-        for i in range(altura):
-            for j in range(largura):
-                img_r_arr[i, j] = img_p_arr[i, j] / img_q_arr[i, j]
-        img_r_arr = np.clip(np.round(img_r_arr), 0, 255).astype(np.uint8)
-
-    elif operacao == 'Blending':
-        img_r_arr = cv2.addWeighted(img_p_arr, 0.5, img_q_arr, 0.5, 0)
-
-    elif operacao == 'AND':
-        img_r_arr = cv2.bitwise_and(img_p_arr, img_q_arr)
-
-    elif operacao == 'OR':
-        img_r_arr = cv2.bitwise_or(img_p_arr, img_q_arr)
-
-    elif operacao == 'XOR':
-        img_r_arr = cv2.bitwise_xor(img_p_arr, img_q_arr)
-
-    elif operacao == 'NOT':
-        img_r_arr = cv2.bitwise_not(img_p_arr)
+def operar_imagens(operacao):
+    global imagem1, imagem2, resultado, resultado_tk
+    if imagem1 and imagem2:  # verifica se as duas imagens foram selecionadas
+        if imagem1.size == imagem2.size:  # verifica se as imagens têm o mesmo tamanho
+            # cria uma imagem vazia com o mesmo modo e tamanho das imagens originais
+            resultado = Image.new(imagem1.mode, imagem1.size)
+            if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
+                for i in range(imagem1.width):
+                    for j in range(imagem1.height):
+                        # obtém o pixel da imagem 1 na posição (i,j)
+                        pixel1 = imagem1.getpixel((i, j))
+                        # obtém o pixel da imagem 2 na posição (i,j)
+                        pixel2 = imagem2.getpixel((i, j))
+                        # realiza a operação matemática com os valores dos canais RGB individualmente
+                        if operacao == 'soma':
+                            novo_pixel = (min(pixel1[0] + pixel2[0], 255),
+                                          min(pixel1[1] + pixel2[1], 255),
+                                          min(pixel1[2] + pixel2[2], 255),)
+                        elif operacao == 'subtracao':
+                            novo_pixel = (max(pixel1[0] - pixel2[0], 0),
+                                          max(pixel1[1] - pixel2[1], 0),
+                                          max(pixel1[2] - pixel2[2], 0),)
+                        elif operacao == 'multiplicacao':
+                            novo_pixel = (min(pixel1[0] * pixel2[0], 255),
+                                          min(pixel1[1] * pixel2[1], 255),
+                                          min(pixel1[2] * pixel2[2], 255),)
+                        elif operacao == 'divisao':
+                            novo_pixel = (pixel1[0] // max(pixel2[0], 1),
+                                          pixel1[1] // max(pixel2[1], 1),
+                                          pixel1[2] // max(pixel2[2], 1))
+                        elif operacao == 'and':
+                            novo_pixel = (pixel1[0] & pixel2[0],
+                                          pixel1[1] & pixel2[1],
+                                          pixel1[2] & pixel2[2])
+                        elif operacao == 'or':
+                            novo_pixel = (pixel1[0] | pixel2[0],
+                                          pixel1[1] | pixel2[1],
+                                          pixel1[2] | pixel2[2])
+                        elif operacao == 'xor':
+                            novo_pixel = (pixel1[0] ^ pixel2[0],
+                                          pixel1[1] ^ pixel2[1],
+                                          pixel1[2] ^ pixel2[2])
+                        elif operacao == 'media':
+                            novo_pixel = ((pixel1[0] + pixel2[0]) // 2,
+                                          (pixel1[1] + pixel2[1]) // 2,
+                                          (pixel1[2] + pixel2[2]) // 2)
+                        elif operacao == 'blend':
+                            alpha = float(campo_alpha.get())
+                            novo_pixel = tuple(int(alpha*p1 + (1-alpha)*p2)
+                                               for p1, p2 in zip(pixel1, pixel2))
+                        else:
+                            messagebox.showerror(
+                                "Erro", "Operação inválida.")  # exibe uma mensagem de erro se a operação for inválida
+                            return
+                        # atribui o novo pixel à imagem resultante na posição (i,j)
+                        resultado.putpixel((i, j), novo_pixel)
+            elif imagem1.mode == 'L':  # se a imagem for escala de cinza
+                for i in range(imagem1.width):
+                    for j in range(imagem1.height):
+                        # obtém o pixel da imagem 1 na posição (i,j)
+                        pixel1 = imagem1.getpixel((i, j))
+                        # obtém o pixel da imagem 2 na posição (i,j)
+                        pixel2 = imagem2.getpixel((i, j))
+                        # realiza a operação matemática com os valores dos canais de escala de cinza
+                        if operacao == 'soma':
+                            novo_pixel = min(pixel1 + pixel2, 255)
+                        elif operacao == 'subtracao':
+                            novo_pixel = max(pixel1 - pixel2, 0)
+                        elif operacao == 'multiplicacao':
+                            novo_pixel = min(pixel1 * pixel2, 255)
+                        elif operacao == 'divisao':
+                            novo_pixel = pixel1 // max(pixel2, 1)
+                        elif operacao == 'and':
+                            novo_pixel = pixel1 & pixel2
+                        elif operacao == 'or':
+                            novo_pixel = pixel1 | pixel2
+                        elif operacao == 'xor':
+                            novo_pixel = pixel1 ^ pixel2
+                        elif operacao == 'media':
+                            novo_pixel = (pixel1 + pixel2) // 2
+                        elif operacao == 'blend':
+                            alpha = float(campo_alpha.get())
+                            novo_pixel = int(alpha*pixel1 + (1-alpha)*pixel2)
+                        else:
+                            messagebox.showerror(
+                                "Erro", "Operação inválida.")  # exibe uma mensagem de erro se a operação for inválida
+                            return
+                        # atribui o novo pixel à imagem resultante na posição (i,j)
+                        resultado.putpixel((i, j), novo_pixel)
+            else:
+                messagebox.showerror(
+                    "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
+                return
+            # cria uma nova imagem Tkinter com a imagem resultante
+            resultado_tk = ImageTk.PhotoImage(resultado)
+            # exibe uma mensagem de sucesso
+            messagebox.showinfo("Sucesso", "Imagens somadas com sucesso.")
+            # exibe a imagem resultante no widget Label
+            label_resultado.config(image=resultado_tk)
+        else:
+            messagebox.showerror(
+                "Erro", "As imagens precisam ter o mesmo tamanho.")  # exibe uma mensagem de erro se as imagens não tiverem o mesmo tamanho
     else:
-        return
+        # exibe uma mensagem de erro se as imagens não foram selecionadas
+        messagebox.showerror("Erro", "Selecione duas imagens.")
 
-    # Transforma o array de volta em uma imagem
-    img_r = Image.fromarray(img_r_arr)
-    img_r = img_r.convert('L')
 
-    # Exibe a imagem img_r_arrante na janela
-    img_r_tk = ImageTk.PhotoImage(img_r)
-    imagem_r.config(image=img_r_tk)
-    imagem_r.image = img_r_tk
+def not_image():
+    global imagem1, resultado, resultado_tk
+    if imagem1:  # verifica se a imagem foi selecionada
+        # cria uma imagem vazia com o mesmo modo e tamanho da imagem original
+        resultado = Image.new(imagem1.mode, imagem1.size)
+        if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+                    # realiza a operação "not" em cada canal de cor individualmente
+                    novo_pixel = (
+                        255 - pixel1[0], 255 - pixel1[1], 255 - pixel1[2])
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+        elif imagem1.mode == 'L':  # se a imagem for escala de cinza
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+                    # realiza a operação "not" no pixel
+                    novo_pixel = 255 - pixel1
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+        else:
+            messagebox.showerror(
+                "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
+            return
+        # cria uma nova imagem Tkinter com a imagem resultante
+        resultado_tk = ImageTk.PhotoImage(resultado)
+        # exibe uma mensagem de sucesso
+        messagebox.showinfo("Sucesso", "Imagem 'not' com sucesso.")
+        # exibe a imagem resultante no widget Label
+        label_resultado.config(image=resultado_tk)
+    else:
+        # exibe uma mensagem de erro se a imagem não foi selecionada
+        messagebox.showerror("Erro", "Selecione uma imagem.")
 
-    # Verifica se as imagens foram escolhidas
-    if img_p_arr is None or img_q_arr is None:
-        messagebox.showerror('Erro', 'As imagens P e Q devem ser escolhidas')
-        return
 
-    # Verifica se as imagens têm as mesmas dimensões
-    if img_p_arr.shape != img_q_arr.shape:
+def salvar_resultado():
+    global resultado
+    if resultado:
+        caminho_salvar = filedialog.asksaveasfilename(
+            filetypes=[("Imagens", "*.jpg;*.png")], defaultextension=".png")
+        if caminho_salvar:
+            resultado.save(caminho_salvar)
+            messagebox.showinfo("Sucesso", "Resultado salvo com sucesso.")
+    else:
         messagebox.showerror(
-            'Erro', 'As imagens devem ter as mesmas dimensões')
-        return
-
-    # Transforma o array de volta em uma imagem
-    img_r = Image.fromarray(img_r_arr)
-    img_r = img_r.convert('L')
-
-    # Exibe a imagem img_r_arrante na janela
-    img_r_tk = ImageTk.PhotoImage(img_r)
-    imagem_r.config(image=img_r_tk)
-    imagem_r.image = img_r_tk
+            "Erro", "Some as imagens antes de salvar o resultado.")
 
 
-# Cria a janela principal
-janela = tk.Tk()
-janela.title('Operações com imagens')
+imagem1 = None
+imagem2 = None
+resultado = None
+imagem1_tk = None
+imagem2_tk = None
+resultado_tk = None
 
-# Cria o menu de operações
-menu_operacoes = ttk.Combobox(janela, values=[
-                              'Soma', 'Subtração', 'Multiplicação', 'Divisão', 'Blending', 'AND', 'OR', 'XOR', 'NOT'])
+root = Tk()
+root.title("Somador de imagens")
 
-menu_operacoes.grid(row=0, column=0)
+# Criar um Canvas com barras de rolagem
+container1 = Frame(root)
+container1.pack()
 
-# Cria os botões para escolher as imagens
-botao_escolher_p = tk.Button(
-    janela, text='Escolher imagem P', command=escolher_imagem_p)
-botao_escolher_p.grid(row=1, column=0, padx=10, pady=10)
+botao_imagem1 = Button(
+    container1, text="Selecionar imagem 1", command=abrir_imagem1)
+botao_imagem1.pack(side=LEFT)
 
-botao_escolher_q = tk.Button(
-    janela, text='Escolher imagem Q', command=escolher_imagem_q)
-botao_escolher_q.grid(row=1, column=1, padx=10, pady=10)
+botao_imagem2 = Button(
+    container1, text="Selecionar imagem 2", command=abrir_imagem2)
+botao_imagem2.pack(side=LEFT)
 
-# Cria o botão para calcular a operação escolhida
-botao_calcular = tk.Button(
-    janela, text='Calcular', command=lambda: calcular_operacao(menu_operacoes.get()))
-botao_calcular.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+container2 = Frame(root)
+container2.pack(pady=10)
 
-# Botao para exportar imagem
-botao_exportar = ttk.Button(
-    janela, text='Exportar imagem', command=lambda: exportar_imagem(img_r_arr))
-botao_exportar.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+botao_somar = Button(container2, text="Somar",
+                     command=lambda: operar_imagens("soma"))
+botao_somar.pack(side=LEFT)
 
-# Cria as labels para exibir as imagens escolhidas e img_r_arr
-imagem_p = tk.Label(janela)
-imagem_p.grid(row=3, column=0)
+botao_subtrair = Button(container2, text="Subtrair",
+                        command=lambda: operar_imagens("subtracao"))
+botao_subtrair.pack(side=LEFT)
 
-imagem_q = tk.Label(janela)
-imagem_q.grid(row=3, column=1)
+botao_multiplicar = Button(
+    container2, text="Multiplicar", command=lambda: operar_imagens("multiplicacao"))
+botao_multiplicar.pack(side=LEFT)
 
-imagem_r = tk.Label(janela)
-imagem_r.grid(row=3, column=2)
+botao_dividir = Button(container2, text="Dividir",
+                       command=lambda: operar_imagens("divisao"))
+botao_dividir.pack(side=RIGHT)
 
-# Configura a janela principal
-janela.geometry('800x600')
-janela.mainloop()
+botao_media = Button(container2, text="Media",
+                     command=lambda: operar_imagens("media"))
+botao_media.pack(side=RIGHT)
+
+
+container5 = Frame(root)
+container5.pack()
+
+botao_and = Button(container5, text="and",
+                   command=lambda: operar_imagens("and"))
+botao_and.pack(side=RIGHT)
+
+botao_or = Button(container5, text="or", command=lambda: operar_imagens("or"))
+botao_or.pack(side=RIGHT)
+
+botao_xor = Button(container5, text="xor",
+                   command=lambda: operar_imagens("xor"))
+botao_xor.pack(side=RIGHT)
+
+botao_not = Button(container5, text="not", command=not_image)
+botao_not.pack(side=RIGHT)
+
+container4 = Frame(root)
+container4.pack()
+
+campo_alpha = Entry(container4)
+campo_alpha.pack(side=LEFT)
+
+botao_blend = Button(container4, text="Blend",
+                     command=lambda: operar_imagens("blend"))
+botao_blend.pack()
+
+container6 = Frame(root)
+container6.pack()
+botao_salvar = Button(container6, text="Salvar resultado",
+                      command=salvar_resultado)
+botao_salvar.pack()
+
+container3 = Frame(root)
+container3.pack(pady=10, fill=BOTH, expand=True)
+
+label_imagem1 = Label(container3)
+label_imagem1.pack(side=LEFT, padx=10)
+
+label_imagem2 = Label(container3)
+label_imagem2.pack(side=LEFT, padx=10)
+
+label_resultado = Label(root)
+label_resultado.pack(pady=10)
+
+
+root.mainloop()

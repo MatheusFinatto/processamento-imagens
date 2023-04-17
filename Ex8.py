@@ -8,6 +8,24 @@ def abrir_imagem1():
     caminho_imagem1 = filedialog.askopenfilename()
     if caminho_imagem1:
         imagem1 = Image.open(caminho_imagem1)
+
+        # Obtém as dimensões da imagem original
+        largura_original, altura_original = imagem1.size
+
+        # Define a largura máxima desejada para o widget Label
+        largura_maxima = 300
+
+        # Calcula o fator de escala necessário para redimensionar a imagem
+        fator_escala = min(1.0, largura_maxima / largura_original)
+
+        # Calcula as novas dimensões da imagem
+        largura_nova = int(largura_original * fator_escala)
+        altura_nova = int(altura_original * fator_escala)
+
+        # Redimensiona a imagem com o fator de escala calculado
+        imagem1 = imagem1.resize((largura_nova, altura_nova))
+
+        # Converte a imagem redimensionada em um objeto PhotoImage do Tkinter
         imagem1_tk = ImageTk.PhotoImage(imagem1)
         botao_imagem1.config(text="Imagem 1 selecionada: " + caminho_imagem1)
         label_imagem1.config(image=imagem1_tk)
@@ -18,6 +36,24 @@ def abrir_imagem2():
     caminho_imagem2 = filedialog.askopenfilename()
     if caminho_imagem2:
         imagem2 = Image.open(caminho_imagem2)
+
+        # Obtém as dimensões da imagem original
+        largura_original, altura_original = imagem2.size
+
+        # Define a largura máxima desejada para o widget Label
+        largura_maxima = 300
+
+        # Calcula o fator de escala necessário para redimensionar a imagem
+        fator_escala = min(1.0, largura_maxima / largura_original)
+
+        # Calcula as novas dimensões da imagem
+        largura_nova = int(largura_original * fator_escala)
+        altura_nova = int(altura_original * fator_escala)
+
+        # Redimensiona a imagem com o fator de escala calculado
+        imagem2 = imagem2.resize((largura_nova, altura_nova))
+
+        # Converte a imagem redimensionada em um objeto PhotoImage do Tkinter
         imagem2_tk = ImageTk.PhotoImage(imagem2)
         botao_imagem2.config(text="Imagem 2 selecionada: " + caminho_imagem2)
         label_imagem2.config(image=imagem2_tk)
@@ -224,6 +260,115 @@ def not_image():
         messagebox.showerror("Erro", "Selecione uma imagem.")
 
 
+def multiplicar_por_fator():
+    global imagem1, resultado, resultado_tk
+    if imagem1:  # verifica se a imagem foi selecionada
+
+        # cria uma imagem vazia com o mesmo modo e tamanho da imagem original
+        resultado = Image.new(imagem1.mode, imagem1.size)
+
+        if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+
+                    # realiza a operação "not" em cada canal de cor individualmente
+                    fator = float(campo_multiplicacao.get())
+                    novo_pixel = (int(min(pixel1[0] * fator, 255)),
+                                  int(min(pixel1[1] * fator, 255)),
+                                  int(min(pixel1[2] * fator, 255)))
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+
+        elif imagem1.mode == 'L':  # se a imagem for escala de cinza
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+
+                    # realiza a operação "not" no pixel
+                    fator = float(campo_multiplicacao.get())
+                    novo_pixel = (min(pixel1 * fator, 255))
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+
+        else:
+            messagebox.showerror(
+                "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
+            return
+
+        # cria uma nova imagem Tkinter com a imagem resultante
+        resultado_tk = ImageTk.PhotoImage(resultado)
+
+        # exibe uma mensagem de sucesso
+        messagebox.showinfo("Sucesso", "Imagem multiplicada com sucesso.")
+
+        # exibe a imagem resultante no widget Label
+        label_resultado.config(image=resultado_tk)
+
+    else:
+        # exibe uma mensagem de erro se a imagem não foi selecionada
+        messagebox.showerror("Erro", "Selecione uma imagem.")
+
+
+def dividir_por_fator():
+    global imagem1, resultado, resultado_tk
+    if imagem1:  # verifica se a imagem foi selecionada
+
+        # cria uma imagem vazia com o mesmo modo e tamanho da imagem original
+        resultado = Image.new(imagem1.mode, imagem1.size)
+
+        if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+
+                    # realiza a operação "not" em cada canal de cor individualmente
+                    fator = float(campo_divisao.get())
+                    novo_pixel = (int(max(pixel1[0] / fator, 1)),
+                                  int(max(pixel1[1] / fator, 1)),
+                                  int(max(pixel1[2] / fator, 1)))
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+
+        elif imagem1.mode == 'L':  # se a imagem for escala de cinza
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+
+                    # realiza a operação "not" no pixel
+                    fator = float(campo_divisao.get())
+                    novo_pixel = int((max(pixel1 / fator, 0)))
+
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+
+        else:
+            messagebox.showerror(
+                "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
+            return
+
+        # cria uma nova imagem Tkinter com a imagem resultante
+        resultado_tk = ImageTk.PhotoImage(resultado)
+
+        # exibe uma mensagem de sucesso
+        messagebox.showinfo("Sucesso", "Imagem dividida com sucesso.")
+
+        # exibe a imagem resultante no widget Label
+        label_resultado.config(image=resultado_tk)
+
+    else:
+        # exibe uma mensagem de erro se a imagem não foi selecionada
+        messagebox.showerror("Erro", "Selecione uma imagem.")
+
+
 def salvar_resultado():
     global resultado
     if resultado:
@@ -304,28 +449,53 @@ container4 = Frame(root)
 container4.pack()
 
 campo_alpha = Entry(container4)
-campo_alpha.pack(side=LEFT)
+campo_alpha.pack(side=RIGHT)
 
 botao_blend = Button(container4, text="Blend",
                      command=lambda: operar_imagens("blend"))
 botao_blend.pack()
 
+container8 = Frame(root)
+container8.pack()
+
+campo_multiplicacao = Entry(container8)
+campo_multiplicacao.pack(side=RIGHT)
+
+botao_multiplicacao_fator = Button(container8, text="Multiplicar por fator",
+                                   command=lambda: multiplicar_por_fator())
+botao_multiplicacao_fator.pack()
+
 container6 = Frame(root)
 container6.pack()
-botao_salvar = Button(container6, text="Salvar resultado",
+
+campo_divisao = Entry(container6)
+campo_divisao.pack(side=RIGHT)
+
+botao_divisao_fator = Button(container6, text="Divisao por fator",
+                             command=lambda: dividir_por_fator())
+botao_divisao_fator.pack()
+
+
+container7 = Frame(root)
+container7.pack()
+
+botao_salvar = Button(container7, text="Salvar resultado",
                       command=salvar_resultado)
 botao_salvar.pack()
 
 container3 = Frame(root)
 container3.pack(pady=10, fill=BOTH, expand=True)
 
+
 label_imagem1 = Label(container3)
 label_imagem1.pack(side=LEFT, padx=10)
+
 
 label_imagem2 = Label(container3)
 label_imagem2.pack(side=LEFT, padx=10)
 
-label_resultado = Label(root)
+
+label_resultado = Label(container3)
 label_resultado.pack(pady=10)
 
 

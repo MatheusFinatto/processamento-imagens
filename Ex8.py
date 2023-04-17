@@ -8,6 +8,24 @@ def abrir_imagem1():
     caminho_imagem1 = filedialog.askopenfilename()
     if caminho_imagem1:
         imagem1 = Image.open(caminho_imagem1)
+
+        # Obtém as dimensões da imagem original
+        largura_original, altura_original = imagem1.size
+
+        # Define a largura máxima desejada para o widget Label
+        largura_maxima = 300
+
+        # Calcula o fator de escala necessário para redimensionar a imagem
+        fator_escala = min(1.0, largura_maxima / largura_original)
+
+        # Calcula as novas dimensões da imagem
+        largura_nova = int(largura_original * fator_escala)
+        altura_nova = int(altura_original * fator_escala)
+
+        # Redimensiona a imagem com o fator de escala calculado
+        imagem1 = imagem1.resize((largura_nova, altura_nova))
+
+        # Converte a imagem redimensionada em um objeto PhotoImage do Tkinter
         imagem1_tk = ImageTk.PhotoImage(imagem1)
         botao_imagem1.config(text="Imagem 1 selecionada: " + caminho_imagem1)
         label_imagem1.config(image=imagem1_tk)
@@ -18,6 +36,24 @@ def abrir_imagem2():
     caminho_imagem2 = filedialog.askopenfilename()
     if caminho_imagem2:
         imagem2 = Image.open(caminho_imagem2)
+
+        # Obtém as dimensões da imagem original
+        largura_original, altura_original = imagem2.size
+
+        # Define a largura máxima desejada para o widget Label
+        largura_maxima = 300
+
+        # Calcula o fator de escala necessário para redimensionar a imagem
+        fator_escala = min(1.0, largura_maxima / largura_original)
+
+        # Calcula as novas dimensões da imagem
+        largura_nova = int(largura_original * fator_escala)
+        altura_nova = int(altura_original * fator_escala)
+
+        # Redimensiona a imagem com o fator de escala calculado
+        imagem2 = imagem2.resize((largura_nova, altura_nova))
+
+        # Converte a imagem redimensionada em um objeto PhotoImage do Tkinter
         imagem2_tk = ImageTk.PhotoImage(imagem2)
         botao_imagem2.config(text="Imagem 2 selecionada: " + caminho_imagem2)
         label_imagem2.config(image=imagem2_tk)
@@ -319,13 +355,16 @@ botao_salvar.pack()
 container3 = Frame(root)
 container3.pack(pady=10, fill=BOTH, expand=True)
 
+
 label_imagem1 = Label(container3)
 label_imagem1.pack(side=LEFT, padx=10)
+
 
 label_imagem2 = Label(container3)
 label_imagem2.pack(side=LEFT, padx=10)
 
-label_resultado = Label(root)
+
+label_resultado = Label(container3)
 label_resultado.pack(pady=10)
 
 

@@ -1,5 +1,6 @@
-from PIL import Image, ImageTk
 from tkinter import *
+from tkinter import filedialog, messagebox
+from PIL import Image, ImageTk
 
 
 def abrir_imagem1():
@@ -36,7 +37,7 @@ def operar_imagens(operacao):
                     for j in range(imagem1.height):
 
                         # obtém o pixel da imagem 1 na posição (i,j)
-                        pixel1 = imagem1[i, j]
+                        pixel1 = imagem1.getpixel((i, j))
 
                         # obtém o pixel da imagem 2 na posição (i,j)
                         pixel2 = imagem2.getpixel((i, j))

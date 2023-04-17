@@ -260,6 +260,115 @@ def not_image():
         messagebox.showerror("Erro", "Selecione uma imagem.")
 
 
+def multiplicar_por_fator():
+    global imagem1, resultado, resultado_tk
+    if imagem1:  # verifica se a imagem foi selecionada
+
+        # cria uma imagem vazia com o mesmo modo e tamanho da imagem original
+        resultado = Image.new(imagem1.mode, imagem1.size)
+
+        if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+
+                    # realiza a operação "not" em cada canal de cor individualmente
+                    fator = float(campo_multiplicacao.get())
+                    novo_pixel = (int(min(pixel1[0] * fator, 255)),
+                                  int(min(pixel1[1] * fator, 255)),
+                                  int(min(pixel1[2] * fator, 255)))
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+
+        elif imagem1.mode == 'L':  # se a imagem for escala de cinza
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+
+                    # realiza a operação "not" no pixel
+                    fator = float(campo_multiplicacao.get())
+                    novo_pixel = (min(pixel1 * fator, 255))
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+
+        else:
+            messagebox.showerror(
+                "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
+            return
+
+        # cria uma nova imagem Tkinter com a imagem resultante
+        resultado_tk = ImageTk.PhotoImage(resultado)
+
+        # exibe uma mensagem de sucesso
+        messagebox.showinfo("Sucesso", "Imagem multiplicada com sucesso.")
+
+        # exibe a imagem resultante no widget Label
+        label_resultado.config(image=resultado_tk)
+
+    else:
+        # exibe uma mensagem de erro se a imagem não foi selecionada
+        messagebox.showerror("Erro", "Selecione uma imagem.")
+
+
+def dividir_por_fator():
+    global imagem1, resultado, resultado_tk
+    if imagem1:  # verifica se a imagem foi selecionada
+
+        # cria uma imagem vazia com o mesmo modo e tamanho da imagem original
+        resultado = Image.new(imagem1.mode, imagem1.size)
+
+        if imagem1.mode == 'RGB' or imagem1.mode == 'RGBA':  # se a imagem for RGB
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+
+                    # realiza a operação "not" em cada canal de cor individualmente
+                    fator = float(campo_divisao.get())
+                    novo_pixel = (int(max(pixel1[0] / fator, 1)),
+                                  int(max(pixel1[1] / fator, 1)),
+                                  int(max(pixel1[2] / fator, 1)))
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+
+        elif imagem1.mode == 'L':  # se a imagem for escala de cinza
+            for i in range(imagem1.width):
+                for j in range(imagem1.height):
+
+                    # obtém o pixel da imagem 1 na posição (i,j)
+                    pixel1 = imagem1.getpixel((i, j))
+
+                    # realiza a operação "not" no pixel
+                    fator = float(campo_divisao.get())
+                    novo_pixel = int((max(pixel1 / fator, 0)))
+
+                    # atribui o novo pixel à imagem resultante na posição (i,j)
+                    resultado.putpixel((i, j), novo_pixel)
+
+        else:
+            messagebox.showerror(
+                "Erro", "O modo da imagem não é suportado.")  # exibe uma mensagem de erro se o modo da imagem não for suportado
+            return
+
+        # cria uma nova imagem Tkinter com a imagem resultante
+        resultado_tk = ImageTk.PhotoImage(resultado)
+
+        # exibe uma mensagem de sucesso
+        messagebox.showinfo("Sucesso", "Imagem dividida com sucesso.")
+
+        # exibe a imagem resultante no widget Label
+        label_resultado.config(image=resultado_tk)
+
+    else:
+        # exibe uma mensagem de erro se a imagem não foi selecionada
+        messagebox.showerror("Erro", "Selecione uma imagem.")
+
+
 def salvar_resultado():
     global resultado
     if resultado:
@@ -340,15 +449,37 @@ container4 = Frame(root)
 container4.pack()
 
 campo_alpha = Entry(container4)
-campo_alpha.pack(side=LEFT)
+campo_alpha.pack(side=RIGHT)
 
 botao_blend = Button(container4, text="Blend",
                      command=lambda: operar_imagens("blend"))
 botao_blend.pack()
 
+container8 = Frame(root)
+container8.pack()
+
+campo_multiplicacao = Entry(container8)
+campo_multiplicacao.pack(side=RIGHT)
+
+botao_multiplicacao_fator = Button(container8, text="Multiplicar por fator",
+                                   command=lambda: multiplicar_por_fator())
+botao_multiplicacao_fator.pack()
+
 container6 = Frame(root)
 container6.pack()
-botao_salvar = Button(container6, text="Salvar resultado",
+
+campo_divisao = Entry(container6)
+campo_divisao.pack(side=RIGHT)
+
+botao_divisao_fator = Button(container6, text="Divisao por fator",
+                             command=lambda: dividir_por_fator())
+botao_divisao_fator.pack()
+
+
+container7 = Frame(root)
+container7.pack()
+
+botao_salvar = Button(container7, text="Salvar resultado",
                       command=salvar_resultado)
 botao_salvar.pack()
 

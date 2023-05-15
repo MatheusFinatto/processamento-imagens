@@ -422,7 +422,7 @@ def somar_por_fator():
         resultado_tk = ImageTk.PhotoImage(resultado)
 
         # exibe uma mensagem de sucesso
-        messagebox.showinfo("Sucesso", "Imagem dividida com sucesso.")
+        messagebox.showinfo("Sucesso", "Imagem somada com sucesso.")
 
         # exibe a imagem resultante no widget Label
         label_resultado.config(image=resultado_tk)
@@ -477,7 +477,7 @@ def subtrair_por_fator():
         resultado_tk = ImageTk.PhotoImage(resultado)
 
         # exibe uma mensagem de sucesso
-        messagebox.showinfo("Sucesso", "Imagem dividida com sucesso.")
+        messagebox.showinfo("Sucesso", "Imagem subtraida com sucesso.")
 
         # exibe a imagem resultante no widget Label
         label_resultado.config(image=resultado_tk)
@@ -518,7 +518,7 @@ def RGBtoGray():
         resultado_tk = ImageTk.PhotoImage(resultado)
 
         # exibe uma mensagem de sucesso
-        messagebox.showinfo("Sucesso", "Imagem dividida com sucesso.")
+        messagebox.showinfo("Sucesso", "Imagem convertida com sucesso.")
 
         # exibe a imagem resultante no widget Label
         label_resultado.config(image=resultado_tk)
@@ -563,50 +563,6 @@ def RGBtoBinary():
 
         # exibe uma mensagem de sucesso
         messagebox.showinfo("Sucesso", "Imagem convertida com sucesso.")
-
-        # exibe a imagem resultante no widget Label
-        label_resultado.config(image=resultado_tk)
-
-    else:
-        # exibe uma mensagem de erro se a imagem não foi selecionada
-        messagebox.showerror("Erro", "Selecione uma imagem.")
-
-
-def equalize_histogram():
-    global imagem1, resultado, resultado_tk, resultado_tk_norm
-    if imagem1:  # verifica se a imagem foi selecionada
-
-        # calcula o histograma da imagem
-        hist = imagem1.histogram()
-
-        # cria um vetor para armazenar a função de distribuição cumulativa do histograma
-        cdf = [sum(hist[:i+1]) for i in range(len(hist))]
-
-        # normaliza a função de distribuição cumulativa
-        cdf = [round((cdf[i] - cdf[0]) * 255 / (imagem1.width *
-                     imagem1.height - cdf[0])) for i in range(len(cdf))]
-
-        # cria uma imagem vazia com o mesmo tamanho e modo da imagem original
-        resultado = Image.new(imagem1.mode, imagem1.size)
-
-        # aplica a função de distribuição cumulativa aos valores de pixel da imagem original
-        for i in range(imagem1.width):
-            for j in range(imagem1.height):
-
-                # obtém o pixel da imagem 1 na posição (i,j)
-                pixel1 = imagem1.getpixel((i, j))
-
-                # calcula o novo valor de pixel usando a função de distribuição cumulativa
-                novo_pixel = tuple(cdf[pixel1[k]] for k in range(len(pixel1)))
-
-                # atribui o novo pixel à imagem resultante na posição (i,j)
-                resultado.putpixel((i, j), novo_pixel)
-
-        # cria uma nova imagem Tkinter com a imagem resultante
-        resultado_tk = ImageTk.PhotoImage(resultado)
-
-        # exibe uma mensagem de sucesso
-        messagebox.showinfo("Sucesso", "Histograma equalizado com sucesso.")
 
         # exibe a imagem resultante no widget Label
         label_resultado.config(image=resultado_tk)
@@ -682,8 +638,6 @@ def histogram():
         # exibe a imagem resultante no widget Label
         histograma_norm.config(image=resultado_tk_norm)
 
-        # equalize_histogram()
-
     else:
         # exibe uma mensagem de erro se a imagem não foi selecionada
         messagebox.showerror("Erro", "Selecione uma imagem.")
@@ -702,23 +656,60 @@ def salvar_resultado():
             "Erro", "Some as imagens antes de salvar o resultado.")
 
 
+# Esta função aumenta o brilho da imagem em um fator de 1,5
 def realce_max():
     global imagem1_tk
-    imagem_realce_maximo = ImageEnhance.Brightness(imagem1).enhance(1.5)
-    imagem1_tk = ImageTk.PhotoImage(imagem_realce_maximo)
+
+    # extrai os dados dos pixels da imagem
+    pixel_data = list(imagem1.getdata())
+
+    # inicializa uma lista vazia para os novos dados de pixel
+    new_pixel_data = []
+
+    # determina se a imagem é grayscale
+    is_grayscale = imagem1.mode == "L"
+
+    for pixel in pixel_data:
+        # para cada pixel na imagem, aplica a transformação de aumento de brilho
+        if is_grayscale:
+            new_pixel = (min(int(pixel * 1.5), 255),)
+        else:
+            new_pixel = tuple([min(int(c * 1.5), 255) for c in pixel])
+        new_pixel_data.append(new_pixel)  # adiciona o novo pixel à lista
+
+    # cria uma nova imagem com os novos dados de pixel
+    imagem_realce_maximo = Image.new(imagem1.mode, imagem1.size)
+    imagem_realce_maximo.putdata(new_pixel_data)
+    imagem1_tk = ImageTk.PhotoImage(
+        imagem_realce_maximo)  # cria objeto PhotoImage
+    # atualiza o widget do label com a nova imagem
     label_imagem1.config(image=imagem1_tk)
 
 
+# Esta função aumenta o brilho da imagem em um fator de 1,2
 def realce_medio():
     global imagem1_tk
-    imagem_realce_medio = ImageEnhance.Brightness(imagem1).enhance(1.2)
+    pixel_data = list(imagem1.getdata())
+    new_pixel_data = []
+    for pixel in pixel_data:
+        new_pixel = tuple([min(int(c * 1.2), 255) for c in pixel])
+        new_pixel_data.append(new_pixel)
+    imagem_realce_medio = Image.new(imagem1.mode, imagem1.size)
+    imagem_realce_medio.putdata(new_pixel_data)
     imagem1_tk = ImageTk.PhotoImage(imagem_realce_medio)
     label_imagem1.config(image=imagem1_tk)
 
 
+# Esta função diminui o brilho da imagem em um fator de 0,8
 def realce_min():
     global imagem1_tk
-    imagem_realce_minimo = ImageEnhance.Brightness(imagem1).enhance(0.8)
+    pixel_data = list(imagem1.getdata())
+    new_pixel_data = []
+    for pixel in pixel_data:
+        new_pixel = tuple([max(int(c * 0.8), 0) for c in pixel])
+        new_pixel_data.append(new_pixel)
+    imagem_realce_minimo = Image.new(imagem1.mode, imagem1.size)
+    imagem_realce_minimo.putdata(new_pixel_data)
     imagem1_tk = ImageTk.PhotoImage(imagem_realce_minimo)
     label_imagem1.config(image=imagem1_tk)
 
@@ -729,6 +720,8 @@ resultado = None
 imagem1_tk = None
 imagem2_tk = None
 resultado_tk = None
+
+# CONTAINER 1
 
 root = Tk()
 root.title("Operações com imagens")
@@ -744,6 +737,8 @@ botao_imagem1.pack(side=LEFT)
 botao_imagem2 = Button(
     container1, text="Selecionar imagem 2", command=abrir_imagem2)
 botao_imagem2.pack(side=LEFT)
+
+# CONTAINER 2
 
 container2 = Frame(root)
 container2.pack(pady=10)
@@ -768,6 +763,23 @@ botao_media = Button(container2, text="Media",
                      command=lambda: operar_imagens("media"))
 botao_media.pack(side=RIGHT)
 
+# CONTAINER 3
+
+container3 = Frame(root)
+container3.pack(pady=10, fill=BOTH, expand=True)
+
+label_imagem1 = Label(container3)
+label_imagem1.pack(side=LEFT, padx=10)
+
+
+label_imagem2 = Label(container3)
+label_imagem2.pack(side=LEFT, padx=10)
+
+
+label_resultado = Label(container3)
+label_resultado.pack(pady=10)
+
+# CONTAINER 4
 
 container4 = Frame(root)
 container4.pack()
@@ -781,6 +793,8 @@ botao_MEDIA.pack(side=RIGHT)
 botao_MIN = Button(container4, text="MIN",
                    command=lambda: realce_min())
 botao_MIN.pack(side=RIGHT)
+
+# CONTAINER 5
 
 container5 = Frame(root)
 container5.pack()
@@ -811,33 +825,7 @@ botao_histogram = Button(container5, text="Gerar histogramas",
                          command=histogram)
 botao_histogram.pack(side=RIGHT)
 
-
-container8 = Frame(root)
-container8.pack()
-
-# criação do frame esquerdo
-frame_esquerdo = Frame(container8)
-frame_esquerdo.pack(side=LEFT)
-
-campo_somar_fator = Entry(frame_esquerdo, width=10)
-campo_somar_fator.pack(side=RIGHT)
-
-botao_somar_fator = Button(frame_esquerdo, text="Somar por fator",
-                           command=lambda: somar_por_fator())
-botao_somar_fator.pack(side=LEFT)
-
-# criação do frame direito
-frame_direito = Frame(container8)
-frame_direito.pack(side=RIGHT)
-
-campo_multiplicacao = Entry(frame_direito, width=10)
-campo_multiplicacao.pack(side=RIGHT)
-
-botao_multiplicacao_fator = Button(frame_direito, text="Multiplicar por fator",
-                                   command=lambda: multiplicar_por_fator())
-botao_multiplicacao_fator.pack(side=RIGHT)
-
-botao_somar_fator.pack()
+# CONTAINER 6
 
 container6 = Frame(root)
 container6.pack()
@@ -873,27 +861,35 @@ botao_blend = Button(right_frame, text="Blend",
 botao_blend.pack()
 
 
-container7 = Frame(root)
-container7.pack()
+# CONTAINER 8
 
-botao_salvar = Button(container7, text="Salvar resultado",
-                      command=salvar_resultado)
-botao_salvar.pack()
+container8 = Frame(root)
+container8.pack()
 
-container3 = Frame(root)
-container3.pack(pady=10, fill=BOTH, expand=True)
+# criação do frame esquerdo
+frame_esquerdo = Frame(container8)
+frame_esquerdo.pack(side=LEFT)
 
+campo_somar_fator = Entry(frame_esquerdo, width=10)
+campo_somar_fator.pack(side=RIGHT)
 
-label_imagem1 = Label(container3)
-label_imagem1.pack(side=LEFT, padx=10)
+botao_somar_fator = Button(frame_esquerdo, text="Somar por fator",
+                           command=lambda: somar_por_fator())
+botao_somar_fator.pack(side=LEFT)
 
+# criação do frame direito
+frame_direito = Frame(container8)
+frame_direito.pack(side=RIGHT)
 
-label_imagem2 = Label(container3)
-label_imagem2.pack(side=LEFT, padx=10)
+campo_multiplicacao = Entry(frame_direito, width=10)
+campo_multiplicacao.pack(side=RIGHT)
 
+botao_multiplicacao_fator = Button(frame_direito, text="Multiplicar por fator",
+                                   command=lambda: multiplicar_por_fator())
+botao_multiplicacao_fator.pack(side=RIGHT)
 
-label_resultado = Label(container3)
-label_resultado.pack(pady=10)
+botao_somar_fator.pack()
+
 
 container8 = Frame(root)
 container8.pack()
@@ -904,5 +900,13 @@ histograma.pack(side='left', padx=10, pady=10)
 histograma_norm = Label(container8)
 histograma_norm.pack(side='left', padx=10, pady=10)
 
+# CONTAINER 7
+
+container7 = Frame(root)
+container7.pack()
+
+botao_salvar = Button(container7, text="Salvar resultado",
+                      command=salvar_resultado)
+botao_salvar.pack()
 
 root.mainloop()
